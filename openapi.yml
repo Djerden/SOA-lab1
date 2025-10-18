@@ -1,0 +1,251 @@
+openapi: 3.0.0
+
+info:
+  title: City API
+  version: 1.0.0
+  description: API для управления городами
+
+servers:
+  - url: http://localhost:8080
+    description: url для локальной разработки
+
+paths:
+  /cities:
+    get:
+      summary: Получить список городов
+      description: >
+        Возвращает список всех городов с возможностью фильтрации, сортировки и постраничного вывода.
+        Все параметры передаются в URL.
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          schema:
+            type: integer
+            minimum: 1
+        - name: size
+          in: query
+          description: Размер страницы
+          schema:
+            type: integer
+            minimum: 1
+        - name: sort
+          in: query
+          description: Поле для сортировки (например, name или population)
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Условия фильтрации (например, population>1000)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список городов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+    post:
+      summary: Добавить новый город
+      description: Добавляет новый объект City в коллекцию.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CityCreateRequest'
+      responses:
+        '201':
+          description: Город успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+        '400':
+          description: Ошибка валидации данных
+
+  /cities/{id}:
+    get:
+      summary: Получить город по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Найденный город
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+        '404':
+          description: Город не найден
+
+    put:
+      summary: Обновить город по ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CityCreateRequest'
+      responses:
+        '200':
+          description: Город обновлён
+        '400':
+          description: Ошибка валидации
+        '404':
+          description: Город не найден
+
+    delete:
+      summary: Удалить город по ID
+      responses:
+        '204':
+          description: Город удалён
+        '404':
+          description: Город не найден
+
+  /cities/delete-by-governor:
+    delete:
+      summary: Удалить все города по governor.age
+      parameters:
+        - name: age
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Удалено несколько объектов
+
+  /cities/min-coordinates:
+    get:
+      summary: Получить город с минимальными координатами
+      responses:
+        '200':
+          description: Один город с минимальными координатами
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+
+  /cities/count-by-climate:
+    get:
+      summary: Получить количество городов по climate
+      parameters:
+        - name: climate
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Climate'
+      responses:
+        '200':
+          description: Количество городов
+          content:
+            application/json:
+              schema:
+                type: integer
+
+  /genocide/kill/{id}:
+    post:
+      summary: Уничтожить население города
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Население уничтожено
+        '404':
+          description: Город не найден
+
+  /genocide/move-to-poorest/{id}:
+    post:
+      summary: Переселить население города в город с самым низким уровнем жизни
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Переселение выполнено успешно
+        '404':
+          description: Город не найден
+
+components:
+  schemas:
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        creationDate:
+          type: string
+          format: date-time
+        area:
+          type: integer
+          minimum: 1
+        population:
+          type: integer
+          minimum: 1
+        metersAboveSeaLevel:
+          type: number
+          nullable: true
+        capital:
+          type: boolean
+        climate:
+          $ref: '#/components/schemas/Climate'
+          nullable: true
+        standardOfLiving:
+          $ref: '#/components/schemas/StandardOfLiving'
+        governor:
+          $ref: '#/components/schemas/Human'
+
+    CityCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/City'
+      required: [name, coordinates, area, population, capital, standardOfLiving, governor]
+
+    Coordinates:
+      type: object
+      properties:
+        x:
+          type: number
+          maximum: 329
+        y:
+          type: integer
+          minimum: -663
+      required: [x, y]
+
+    Human:
+      type: object
+      properties:
+        age:
+          type: integer
+          minimum: 1
+      required: [age]
+
+    Climate:
+      type: string
+      enum: [TROPICAL_SAVANNA, STEPPE, SUBARCTIC, POLAR_ICECAP]
+
+    StandardOfLiving:
+      type: string
+      enum: [HIGH, VERY_LOW, ULTRA_LOW]

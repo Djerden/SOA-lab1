@@ -82,3 +82,11 @@ ULTRA_LOW;
 10. Спецификация RESTful-сервисов. Стандарт OpenAPI. 
 11. Автодокументирование RESTful-сервисов. Swagger Editor, Swagger UI (и Swagger Codegen). 
 12. Архитектурный принцип HATEOAS.
+
+### Выполнение
+
+Для локального запуска воспользуйтесь командой:
+```
+docker-compose up
+```
+Для просмотра перейдите на страницу http://localhost:8080
